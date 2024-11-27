@@ -4,23 +4,33 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
 
+// Set up Multer for file storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, "public/uploads");
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    },
+});
+const upload = multer({ storage });
+
+// Serve static files
 app.use(express.static("public"));
 
-// Serve files list
+// Get a list of uploaded files
 app.get("/files", (req, res) => {
-    fs.readdir(path.join(__dirname, "uploads"), (err, files) => {
+    const uploadDir = path.join(__dirname, "public/uploads");
+    fs.readdir(uploadDir, (err, files) => {
         if (err) return res.status(500).send("Error reading files.");
-        res.json(files);
+        const fileUrls = files.map(file => `/uploads/${file}`);
+        res.json(fileUrls);
     });
 });
 
-// Upload file
-app.post("/upload", upload.single("file"), (req, res) => {
-    res.status(200).send("File uploaded successfully!");
-});
-
-app.listen(3000, () => {
-    console.log("Server is running on http://localhost:3000");
-});
+// Handle file uploads
