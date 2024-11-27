@@ -15,8 +15,27 @@ function fetchFiles() {
         .then(files => {
             const fileList = document.getElementById("file-list");
             fileList.innerHTML = files
-                .map(file => `<li><a href="${file}" target="_blank">${file.split('/').pop()}</a></li>`)
+                .map(file => `
+                    <li>
+                        <a href="${file.url}" target="_blank">${file.name}</a>
+                        <button onclick="deleteFile('${file.name}')">Delete</button>
+                        <a href="${file.url}" download="${file.name}">
+                            <button>Download</button>
+                        </a>
+                    </li>
+                `)
                 .join('');
+        });
+}
+
+function deleteFile(fileName) {
+    fetch(`/delete/${fileName}`, { method: 'DELETE' })
+        .then(response => {
+            if (response.ok) {
+                fetchFiles();
+            } else {
+                alert("Failed to delete file.");
+            }
         });
 }
 
