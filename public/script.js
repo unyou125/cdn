@@ -14,7 +14,9 @@ function fetchFiles() {
         .then(response => response.json())
         .then(files => {
             const fileList = document.getElementById("file-list");
-            fileList.innerHTML = files.map(file => `<li>${file}</li>`).join('');
+            fileList.innerHTML = files
+                .map(file => `<li><a href="${file}" target="_blank">${file.split('/').pop()}</a></li>`)
+                .join('');
         });
 }
 
